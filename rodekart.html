@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+	
+	<title>Rodekart</title>
+
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<link rel="shortcut icon" type="image/x-icon" href="docs/images/favicon.ico" />
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css" integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA==" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js" integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg==" crossorigin=""></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+</head>
+<body>
+
+<div id="rodekart" style="width: 600px; height: 400px;"></div>
+<script>
+
+    function rodeStyle(feature) {
+	    return {
+	        color: 'blue',
+	        weight: 1,
+	    };
+	}
+
+    function rodeHighlight(e) {
+	    var layer = e.target;
+
+	    layer.setStyle({
+	        weight: 2,
+	        color: 'red',
+	    });
+
+        layer.toggleTooltip();
+
+	    if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+	        layer.bringToFront();
+	    }
+	}
+
+	function rodeResetHighlight(e) {
+	    var layer = e.target;
+
+	    layer.setStyle({
+	        weight: 1,
+	        color: 'blue',
+	    });
+
+        layer.toggleTooltip();
+
+	    if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+	        layer.bringToFront();
+	    }
+	}
+
+    function onEachRode(feature, layer) {
+	    if (feature.properties) {
+            layer.bindTooltip(
+                feature.properties.rode,
+                    {
+                        permanent: true,
+                    }
+                );
+        }
+        layer.on({
+	        mouseover: rodeHighlight,
+	        mouseout: rodeResetHighlight,
+	    });
+	}
+
+	var map = L.map('rodekart').setView([59, 10], 8);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+	}).addTo(map);
+
+    $.getJSON("https://raw.githubusercontent.com/nielsin/rodekart/master/roder.geojson", function(data) {
+        var roder = L.geoJSON(data, {
+            onEachFeature: onEachRode,
+            style: rodeStyle
+        });
+
+        map.fitBounds(roder.getBounds());
+        roder.addTo(map);
+    })
+
+</script>
+
+</body>
+</html>
